@@ -88,3 +88,15 @@ const VendorSchema: Schema = new Schema(
     toObject: { virtuals: true }, // Include virtuals when converting to object
   }
 );
+
+// Create Indexes for faster queries
+VendorSchema.index({ email: 1 });
+VendorSchema.index({ name: 1 });
+VendorSchema.index({ category: 1 });
+VendorSchema.index({ isActive: 1 });
+
+// create the model
+const Vendor =
+  mongoose.models.Vendor || mongoose.model<IVendor>("Vendor", VendorSchema);
+
+export default Vendor;
