@@ -155,3 +155,56 @@ export async function PUT(request: NextRequest, { params }: Params) {
     );
   }
 }
+
+// DELETE /api/vendors/[id] - Delete vendor (soft delete by setting isActive to false)
+export async function DELETE(request: NextRequest, { params }: Params) {
+  try {
+    await connectDB();
+
+    const { id } = params;
+
+    // Validate MongoDB ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid vendor ID format",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Soft delete - set isActive to false
+    const vendor = await Vendor.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    ).select("-__v");
+
+    if (!vendor) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Vendor not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Vendor deactivated successfully",
+      data: vendor,
+    });
+  } catch (error) {
+    console.error("Error deactivating vendor:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to deactivate vendor",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
